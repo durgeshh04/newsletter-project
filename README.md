@@ -1,4 +1,4 @@
-# ts-node-react-template
+# newsletter-project
 
 A simple and minimalist TypeScript boilerplate with a starting `/server` and `/web` apps.
 
@@ -7,7 +7,6 @@ A simple and minimalist TypeScript boilerplate with a starting `/server` and `/w
 1. `npm install` on the root directory;
 2. Then `npm install` on the `./server` and `./web` directories;
 3. Finally to run them both: `npm run local` on the root directory.
-
 
 ### Prerequisites
 
