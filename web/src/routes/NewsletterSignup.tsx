@@ -2,10 +2,51 @@ import React, { useState } from "react";
 
 export default function NewsletterSignup() {
   const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [message, setMessage] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitted email:", email);
+    setStatus("loading");
+    setMessage("");
+
+    try {
+      const configuredApiBase: unknown = import.meta.env.VITE_API_BASE_URL;
+      const apiBase =
+        typeof configuredApiBase === "string" && configuredApiBase
+          ? configuredApiBase
+          : "/api";
+
+      const response = await fetch(`${apiBase}/v1/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const responseData: unknown = await response.json();
+      const data: { message?: string } =
+        typeof responseData === "object" &&
+        responseData !== null &&
+        "message" in responseData &&
+        typeof responseData.message === "string"
+          ? { message: responseData.message }
+          : {};
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to subscribe");
+      }
+
+      setStatus("success");
+      setMessage(data.message || "Successfully signed up!");
+      setEmail("");
+    } catch (err: unknown) {
+      setStatus("error");
+      setMessage(err instanceof Error ? err.message : "Something went wrong");
+    }
   };
 
   return (
@@ -35,11 +76,25 @@ export default function NewsletterSignup() {
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
+
+        {status === "error" && (
+          <p className="text-xs text-red-600 bg-red-50 p-2 rounded border border-red-200">
+            {message}
+          </p>
+        )}
+
+        {status === "success" && (
+          <p className="text-xs text-green-600 bg-green-50 p-2 rounded border border-green-200">
+            {message}
+          </p>
+        )}
+
         <button
           type="submit"
-          className="w-full py-2 px-4 bg-blue-600 text-white font-medium text-sm rounded-md hover:bg-blue-700 transition-colors"
+          disabled={status === "loading"}
+          className="w-full py-2 px-4 bg-blue-600 text-white font-medium text-sm rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
         >
-          Subscribe
+          {status === "loading" ? "Subscribing..." : "Subscribe"}
         </button>
       </form>
     </div>
