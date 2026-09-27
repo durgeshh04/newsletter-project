@@ -1,10 +1,16 @@
-import express, { Express, Response, Request } from "express";
+import express, { Express, Response, Request, NextFunction } from "express";
 import { createHealthRouter } from "./routes/health";
+import { NewsLetterRouter } from "./routes/newsletter";
 
-const errorHandler = (error: Error, req: Request, res: Response) => {
-  console.log(error);
+const errorHandler = (
+  error: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log("Global Error Handler caught:", error.message);
 
-  res.status(500).json({
+  res.status(400).json({
     status: false,
     message: error.message || "Internal Server Error",
   });
@@ -23,6 +29,7 @@ export const createServer = (): Express => {
   server.use(express.urlencoded({ extended: true }));
 
   server.use("/v1", createHealthRouter());
+  server.use("/v1", NewsLetterRouter());
 
   server.use((req, res, next) => {
     next(new Error("Not found"));
